@@ -2,24 +2,30 @@
 
 import socket
 
-print("Starting server, waiting for client...")
-sock = socket.socket()
-host = socket.gethostname()
-port = 1000
+def Main():
 
-sock.bind((host, port))
-sock.listen(5)
-con = None
+    host = socket.gethostname()
+    port = 5000
 
-while True:
-    if con is None:
-        # Wait here
-        print("Waiting for connection...")
-        con, addr = sock.accept()
-        print("Received connection from: " + str(addr))
-    else:
-        # Wait here also
-        print("Waiting for response...")
-        print(sock.recv(1024))
-        data = input("Type a message for the client: ")
-        con.send(str.encode(data))
+    localSocket = socket.socket()
+    localSocket.bind((host, port))
+
+    localSocket.listen(1)
+    conn, addr = localSocket.accept()
+    print("Received connection from: " + str(addr))
+
+    while True:
+        data = conn.recv(1024).decode()
+
+        if not data:
+            break
+        elif (str(data) == 'exit()'):
+            print("Tried to exit!")
+
+        print("Client says: " + str(data))
+        conn.send(data.encode())
+
+    conn.close()
+
+if __name__ == '__main__':
+    Main()

@@ -2,15 +2,22 @@
 
 import socket
 
-sock = socket.socket()
-host = socket.gethostname()
-port = 1000
+def Main():
+    host = socket.gethostname()
+    port = 5000
 
-sock.connect((host, port))
-print("Connected to :" + str(host))
+    localSocket = socket.socket()
+    localSocket.connect((host, port))
 
-while True:
-    data = input("Type a message for the server: ")
-    sock.send(str.encode(data))
-    print("Waiting for response...")
-    print(sock.recv(1024))
+    message = input("Message(-1 to send): ")
+
+    while message != '-1':
+        localSocket.send(message.encode())
+        data = localSocket.recv(1024).decode()
+        print("->: " + data)
+        message = input("Message(-1 to send): ")
+
+    localSocket.close()
+
+if __name__ == '__main__':
+    Main()
