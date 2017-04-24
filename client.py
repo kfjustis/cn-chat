@@ -1,23 +1,39 @@
-#!/usr/bin/python
-
 import socket
+import sys
 
 def Main():
+    # connect and ask for username
     host = socket.gethostname()
-    port = 5000
-
+    port = 12450
     localSocket = socket.socket()
     localSocket.connect((host, port))
+    print()
+    print("Connected to " + str(host) + '/' + str(port) + '!')
+    message = input("\nUsername: ")
+    localSocket.send(message.encode())
 
-    message = input("Message(-1 to send): ")
+    waiting = True
+    while waiting is True:
+        response = localSocket.recv(1024).decode()
+        if response == "ack":
+            break
+        elif response == "error":
+            print("\nInvalid username! Terminating client...")
+            localSocket.close()
+            sys.exit()
+        else:
+            print("Waiting for server response...")
 
-    while message != '-1':
-        localSocket.send(message.encode())
-        data = localSocket.recv(1024).decode()
-        print("->: " + data)
-        message = input("Message(-1 to send): ")
-
+    print("\nUsername matched by server!")
+    '''
+    # connect and ask for password
+    localSocket = socket.socket()
+    localSocket.connect((host, port))
+    print()
+    message = input("\nPassword: ")
+    localSocket.send(message.encode())
     localSocket.close()
+    '''
 
 if __name__ == '__main__':
     Main()
