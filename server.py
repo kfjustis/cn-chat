@@ -75,6 +75,11 @@ def Main():
                 else:
                     conn.send(ack.encode())
                     login = True
+            elif opts[0] == "exit":
+                print_error_and_send("Server closed by client!", conn)
+                conn.send(ack.encode())
+                conn.close()
+                sys.exit()
             elif opts[0] != "login":
                 print_error_and_send("(3) Invalid use of login command! Terminating server...", conn)
                 #conn.send(invalid_command.encode())
@@ -109,11 +114,6 @@ def Main():
                         conn.send(error.encode())
                         conn.close()
                         sys.exit()
-            elif opts[0] == "exit":
-                print_error_and_Send("Server closed by client!")
-                conn.send(ack.encode())
-                conn.close()
-                sys.exit()
             else:
                 print("Command denied. Please login first.")
                 conn.send(invalid_command.encode())

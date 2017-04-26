@@ -51,7 +51,7 @@ def Main():
     localSocket.send(message.encode())
 
     # wait for valid command
-    while wait_for_server("\nCommand invalid! If you haven't logged in, please do so.",
+    while wait_for_server("\nCommand invalid or exited! If you haven't logged in, please do so.",
         localSocket) == "invalid command":
         pass
 
@@ -61,7 +61,7 @@ def Main():
         message = input("Enter command: ")
         localSocket.send(message.encode())
 
-        while wait_for_server("\nCommand invalid! If you haven't logged in, please do so.",
+        while wait_for_server("\nCommand invalid or exited! If you haven't logged in, please do so.",
             localSocket) == "invalid command":
             pass
 
