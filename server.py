@@ -13,19 +13,28 @@ def check_commands(input_command, comm_list):
 
     return False
 
+def check_username_or_password(input_info, uInfoList):
+    for info in uInfoList:
+        if input_info == info:
+            return True
+
+    return False
+
 def Main():
     # vars
     ack = "ack"
     error = "error"
     invalid_command = "invalid_command"
+    invalid_username = "invalid_username"
     running = True
     login = False
     commandFailing = False
     commandList = ["send", "login", "logout"]
+    currentUser = None
 
     # read users from file
     file = open("accounts.txt", "r")
-    userInfo = file.read().splitlines()
+    userInfoList = file.read().splitlines()
 
     # connect to verify login
     host = socket.gethostname()
@@ -38,79 +47,87 @@ def Main():
         running = True
 
     # handle reading command (MUST WAIT FOR VALID COMMAND)
-    while running != False:
+    while running:
         command = conn.recv(1024).decode()
         if not command:
             print_error_and_send("Invalid data! Terminating server...", conn)
-            connection.close()
+            conn.close()
             sys.exit()
 
+        # just looking to make sure the command contains login
         validCommand = check_commands(command, commandList)
-        while validCommand == False and login == False:
+        print(validCommand)
+        print(login)
+        while validCommand == False or login == False:
+            opts = command.split()
             if command == "login":
+                opts = command.split()
+                if len(opts) != 3:
+                    print_error_and_send("(1) Invalid use of login command! Terminating server...", conn)
+                    conn.send(error.encode())
+                    conn.close()
+                    sys.exit()
+                elif opts[0] != "login":
+                    print_error_and_send("(2) Invalid use of login command! Terminating server...", conn)
+                    conn.send(error.encode())
+                    conn.close()
+                    sys.exit()
+                else:
+                    conn.send(ack.encode())
+                    login = True
+            elif opts[0] != "login":
+                print_error_and_send("(3) Invalid use of login command! Terminating server...", conn)
+                #conn.send(invalid_command.encode())
+                '''
+                testing
+                '''
+                conn.close()
+                sys.exit()
+            elif opts[0] == "login":
+                if len(opts) != 3:
+                    print_error_and_send("(4) Invalid use of login command! Terminating server...", conn)
+                    conn.send(error.encode())
+                    conn.close()
+                    sys.exit()
+                else:
+                    validCreds = False
+                    if check_username_or_password(opts[1], userInfoList) == True: # check username
+                        if check_username_or_password(opts[2], userInfoList) == True: # check password
+                            print("here2")
+                            conn.send(ack.encode())
+                            login = True
+                            validCommand = True
+                            currentUser = opts[1]
+                        else:
+                            print_error_and_send("Invalid password! Terminating server...", conn)
+                            #conn.send(error.encode())
+                            conn.send(invalid_command.encode())
+                            conn.close()
+                            sys.exit()
+                    else:
+                        print_error_and_send("Invalid username! Terminating server...", conn)
+                        conn.send(error.encode())
+                        conn.close()
+                        sys.exit()
+            elif opts[0] == "exit":
+                print_error_and_Send("Server closed by client!")
                 conn.send(ack.encode())
-                print("\nValidating login...")
-                login = True
+                conn.close()
+                sys.exit()
             else:
                 print("Command denied. Please login first.")
                 conn.send(invalid_command.encode())
                 command = conn.recv(1024).decode()
                 if not command:
                     print_error_and_send("Invalid data! Terminating server...", conn)
-                    # we don't want to close the connection and exit cause this
-                    # should loop until the command is valid
+                    '''
+                    NOTICE!
+                    we don't want to close the connection and exit cause this
+                    should loop until the command is valid
+                    '''
 
-        running = False
-
-    # read username from client and validate
-    print("\nConnection from: " + str(addr))
-    running = True
-    while running != False:
-        conn.send(ack.encode())
-        username = conn.recv(1024).decode()
-        if not username:
-            print_error_and_send("Invalid data! Terminating server...", conn)
-            conn.close()
-            sys.exit()
-
-        validUname = False
-        for name in userInfo:
-            if name == username:
-                validUname = True
-
-        if (validUname == False):
-            print_error_and_send("Username not found! Terminating server...", conn)
-            conn.close()
-            sys.exit()
-
-        print("\nUsername found!")
-
-        running = False
-        conn.send(ack.encode())
-
-    '''
-    # read password from client and validate
-    #conn, addr = localSocket.accept()
-    if conn:
         running = True
-    while running is not False:
-        password = conn.recv(1024).decode()
-        if not password:
-            print_error_and_send("Invalid data! Terminating server...", conn)
 
-        validPword = False
-        for name in userInfo:
-            if name == password:
-                validPword = True
-
-        if (validUname == False):
-            print_error_and_send("Password not found! Terminating server...", conn)
-
-        print("Password found!")
-
-        running = False
-
-    '''
     # close socket and exit
     localSocket.close()
     sys.exit()
