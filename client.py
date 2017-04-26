@@ -40,7 +40,12 @@ def Main():
     host = socket.gethostname()
     port = 12450
     localSocket = socket.socket()
-    localSocket.connect((host, port))
+    try:
+        localSocket.connect((host, port))
+    except socket.error as err:
+        print("\nClient could not connect to server :: ERROR : %s\n" % err)
+        print("Make sure you've started the server before you connect the client!\n")
+        sys.exit()
     print()
     print("Connected to " + str(host) + '/' + str(port) + '!')
 
