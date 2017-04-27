@@ -1,23 +1,29 @@
 import socket
 import sys
 
-def wait_for_server(error_msg, connection):
+def wait_for_server(error_msg, connection, print_message="Command success!"):
     waiting = True
     while waiting == True:
         response = connection.recv(1024).decode()
-        if response == "ack":
+        opts = response.split()
+        print(opts)
+        if opts[0] == "ack":
             waiting = False
-        elif response == "error":
+        elif opts[0] == "ack_message":
+            message = " ".join(opts[1:])
+            print("Server: " + message)
+            waiting = False
+        elif opts[0] == "error":
             print(error_msg)
             connection.close()
             sys.exit()
-        elif response == "invalid_command":
+        elif opts[0] == "invalid_command":
             waiting = False
             print(error_msg)
             message = input("\nEnter command: ")
             connection.send(message.encode())
             return "invalid command"
-        elif response == "inavlid_username":
+        elif opts[0] == "inavlid_username":
             waiting = False
             print(error_msg)
             message = input("\nUsername: ")
@@ -56,7 +62,7 @@ def Main():
     localSocket.send(message.encode())
 
     # wait for valid command
-    while wait_for_server("\nCommand invalid or exited! If you haven't logged in, please do so.",
+    while wait_for_server("\nExited or command invalid! If you haven't logged in, please do so.",
         localSocket) == "invalid command":
         pass
 
@@ -66,7 +72,7 @@ def Main():
         message = input("Enter command: ")
         localSocket.send(message.encode())
 
-        while wait_for_server("\nCommand invalid or exited! If you haven't logged in, please do so.",
+        while wait_for_server("\nExited or command invalid! If you haven't logged in, please do so.",
             localSocket) == "invalid command":
             pass
 

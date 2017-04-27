@@ -26,10 +26,11 @@ def Main():
     error = "error"
     invalid_command = "invalid_command"
     invalid_username = "invalid_username"
+    ack_message = "ack_message"
     running = True
     login = False
     commandFailing = False
-    commandList = ["send", "login", "logout"]
+    commandList = ["send", "login", "logout", "exit"]
     currentUser = None
 
     # read users from file
@@ -49,17 +50,76 @@ def Main():
     # handle reading command (MUST WAIT FOR VALID COMMAND)
     while running:
         command = conn.recv(1024).decode()
+        opts = command.split()
         if not command:
             print_error_and_send("Invalid data! Terminating server...", conn)
             conn.close()
             sys.exit()
 
         # just looking to make sure the command contains login
-        validCommand = check_commands(command, commandList)
-        print(validCommand)
-        print(login)
-        while validCommand == False or login == False:
-            opts = command.split()
+        validCommand = check_commands(opts[0], commandList)
+        print("login state: " + str(login))
+        if validCommand:
+            if opts[0] != "login" and login == False:
+                print("Command denied. Please login first.")
+                conn.send(invalid_command.encode())
+                command = conn.recv(1024).decode()
+                if not command:
+                    print_error_and_send("Invalid data! Terminating server...", conn)
+                    '''
+                    NOTICE!
+                    we don't want to close the connection and exit cause this
+                    should loop until the command is valid
+                    '''
+            if opts[0] == "login":
+                if len(opts) != 3:
+                    print_error_and_send("(1) Invalid use of login command! Terminating server...", conn)
+                    conn.send(error.encode())
+                    conn.close()
+                    sys.exit()
+                # validate credentials that were passed
+                validCreds = False
+                if check_username_or_password(opts[1], userInfoList) == True: # check username
+                    if check_username_or_password(opts[2], userInfoList) == True: # check password
+                        conn.send(ack.encode())
+                        login = True
+                        validCommand = True
+                        currentUser = opts[1]
+                        print("login state after login: " + str(login))
+                        print("logged in as: " + str(currentUser))
+                    else:
+                        print_error_and_send("Invalid password! Terminating server...", conn)
+                        conn.send(invalid_command.encode())
+                        conn.close()
+                        sys.exit()
+                else:
+                    print_error_and_send("Invalid username! Terminating server...", conn)
+                    conn.send(error.encode())
+                    conn.close()
+                    sys.exit()
+                # END LOGIN LOGIC
+            if opts[0] == "exit":
+                print_error_and_send("Server closed by client!", conn)
+                conn.send(ack.encode())
+                conn.close()
+                sys.exit()
+                # END EXIT LOGIC
+            if opts[0] == "send":
+                print("WE ARE SENDING THE SEND")
+                # must build opt list then send as a string
+                optList = []
+                optList.append(ack_message)
+                for opt in opts:
+                    optList.append(opt)
+                optString = " ".join(optList)
+                conn.send(optString.encode())
+        else: # command was not even an existing/recognized command
+            print_error_and_send("Command does not exist! Terminating server...", conn)
+            conn.send(invalid_command.encode())
+            conn.close()
+            sys.exit()
+
+            '''
             if command == "login":
                 opts = command.split()
                 if len(opts) != 3:
@@ -80,12 +140,18 @@ def Main():
                 conn.send(ack.encode())
                 conn.close()
                 sys.exit()
-            elif opts[0] != "login":
+            elif opts[0] == "send":
+                # need to get string without the send command
+                # need to concat received message with the ack for client to see it
+                print("WE ARE SENDING THE SEND")
+                ack_message = ack_message + str(opts[1:])
+                conn.send(ack_message.encode())
+            elif opts[0] != "login" and opts[0] != "send":
                 print_error_and_send("(3) Invalid use of login command! Terminating server...", conn)
                 #conn.send(invalid_command.encode())
-                '''
+
                 testing
-                '''
+                a
                 conn.close()
                 sys.exit()
             elif opts[0] == "login":
@@ -120,11 +186,12 @@ def Main():
                 command = conn.recv(1024).decode()
                 if not command:
                     print_error_and_send("Invalid data! Terminating server...", conn)
-                    '''
+
                     NOTICE!
                     we don't want to close the connection and exit cause this
                     should loop until the command is valid
-                    '''
+
+            '''
 
         running = True
 
