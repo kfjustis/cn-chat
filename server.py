@@ -23,19 +23,20 @@ def check_username_or_password(input_info, uInfoList):
 def Main():
     # vars
     ack = "ack"
+    ack_message = "ack_message"
     error = "error"
     invalid_command = "invalid_command"
     invalid_username = "invalid_username"
-    ack_message = "ack_message"
     running = True
     login = False
     commandFailing = False
-    commandList = ["send", "login", "logout", "exit"]
+    commandList = ["send", "login", "newuser", "exit"]
     currentUser = None
 
     # read users from file
     file = open("accounts.txt", "r")
     userInfoList = file.read().splitlines()
+    file.close()
 
     # connect to verify login
     host = socket.gethostname()
@@ -105,7 +106,6 @@ def Main():
                 sys.exit()
                 # END EXIT LOGIC
             if opts[0] == "send":
-                print("WE ARE SENDING THE SEND")
                 # must build opt list then send as a string
                 optList = []
                 optList.append(ack_message)
@@ -113,6 +113,16 @@ def Main():
                     optList.append(opt)
                 optString = " ".join(optList)
                 conn.send(optString.encode())
+                # END SEND LOGIC
+            if opts[0] == "newuser":
+                uname = opts[1]
+                pword = opts[2]
+                # write account to file (has criteria)
+                file = open("accounts.txt", "a+")
+                file.write("\n" + str(uname) + "\n"+ str(pword))
+                file.close()
+                conn.send(ack.encode())
+                #END NEWUSER LOGIC
         else: # command was not even an existing/recognized command
             print_error_and_send("Command does not exist! Terminating server...", conn)
             conn.send(invalid_command.encode())

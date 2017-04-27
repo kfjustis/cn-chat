@@ -6,7 +6,6 @@ def wait_for_server(error_msg, connection, print_message="Command success!"):
     while waiting == True:
         response = connection.recv(1024).decode()
         opts = response.split()
-        print(opts)
         if opts[0] == "ack":
             waiting = False
         elif opts[0] == "ack_message":

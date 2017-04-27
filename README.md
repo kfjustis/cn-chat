@@ -3,7 +3,8 @@ Simple client-server chat program written in Python.
 
 # Instructions
 The client and server modules must be ran in separate windows and requires
-a current installation of Python 3.
+a current installation of Python 3. Non-windows environments may have to use
+```python3 <file_name.py>``` to launch the python files
 
 Window 1:
 
