@@ -14,5 +14,22 @@ Window 2:
 
     python client.py
 
-The client will start off by prompting for a message. Many messages can be added by typing and pressing ENTER
-each time. Once "-1" is entered, all of the messages will be sent to the server and displayed.
+Commands:
+
+```login <username> <password>``` :: Login to the server with valid username and
+password.
+
+    ex: login Tom Tom11
+
+```send <message>``` :: Send a message to the server (like a chat room).
+
+    ex: send How's it hangin'?
+
+```newuser <username> <password>``` :: Creates a new user with login credentials.
+
+    ex: newuser SuperDude coolguy25
+
+```logout``` :: Logs the user out (closes the server and client connection) and
+ends the program.
+
+    ex: Come on now...
