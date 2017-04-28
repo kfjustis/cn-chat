@@ -28,10 +28,12 @@ def Main():
     ack = "ack"
     ack_message = "ack_message"
     ack_login = "ack_login"
+    ack_bad_password = "ack_bad_password"
     ack_exit = "ack_exit"
     error = "error"
     invalid_command = "invalid_command"
     invalid_username = "invalid_username"
+    invalid_password = "invalid_password"
     running = True
     login = False
     commandFailing = False
@@ -83,13 +85,11 @@ def Main():
                 if len(opts) != 3:
                     #print_error_and_send("(1) Invalid use of login command! Terminating server...", conn)
                     conn.send(invalid_command.encode())
-                    #break
-                    #conn.close()
-                    #sys.exit()
-                    # validate credentials that were passed
-                    validCreds = False
                 elif check_username_or_password(opts[1], userInfoList): # check username
-                    if check_username_or_password(opts[2], userInfoList): # check password
+                    #if check_username_or_password(opts[2], userInfoList): # check password
+                    unameIndex = userInfoList.index(opts[1])
+                    pwordIndex = unameIndex + 1
+                    if (userInfoList[pwordIndex] == opts[2]): # check actual password
                         #conn.send(ack.encode())
                         login = True
                         currentUser = opts[1]
@@ -101,12 +101,11 @@ def Main():
                         #print("login state after login: " + str(login))
                         #print("logged in as: " + str(currentUser))
                     else:
-                        print_error_and_send("Invalid password! Terminating server...", conn)
-                        conn.send(invalid_command.encode())
-                        conn.close()
-                        sys.exit()
+                        #print_error_and_send("Invalid password! Terminating server...", conn)
+                        conn.send(ack_bad_password.encode())
+                        #conn.close()
+                        #sys.exit()
                 else:
-                    print_error_and_send("Invalid username! Terminating server...", conn)
                     conn.send(error.encode())
                     conn.close()
                     sys.exit()

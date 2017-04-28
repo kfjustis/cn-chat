@@ -7,7 +7,7 @@ def wait_for_server(error_msg, connection, print_message="Command success!"):
         response = connection.recv(1024).decode()
         #print(response)
         opts = response.split()
-        #print("opts: " + str(opts))
+        print("opts: " + str(opts))
         if opts[0] == "ack":
             waiting = False
         elif opts[0] == "ack_message":
@@ -38,12 +38,15 @@ def wait_for_server(error_msg, connection, print_message="Command success!"):
             print("Server: " + str(uname) + " left.\n")
             connection.close()
             sys.exit()
-        elif opts[0] == "error":
+            '''elif opts[0] == "error":
+                waiting = False
+                print("We got here")
+                #print(error_msg)
+                #connection.close()
+                #sys.exit()'''
+        elif opts[0] == "ack_bad_password":
             waiting = False
-            print("We got here")
-            #print(error_msg)
-            #connection.close()
-            #sys.exit()
+            print("Server: Incorrect password!")
         elif opts[0] == "invalid_command":
             waiting = False
             print(error_msg)
@@ -55,6 +58,11 @@ def wait_for_server(error_msg, connection, print_message="Command success!"):
             message = input("\nUsername: ")
             connection.send(message.encode())
             return "invalid_username"
+        elif opts[0] == "invalid_password":
+            waiting = False
+            message = input("\nUsername: ")
+            connection.send(message.encode())
+            return "invalid_password"
         else:
             waiting = False
             print("Error was: " + error_msg)
