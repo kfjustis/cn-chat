@@ -28,6 +28,7 @@ def Main():
     ack = "ack"
     ack_message = "ack_message"
     ack_login = "ack_login"
+    ack_new_user = "ack_new_user"
     ack_bad_password = "ack_bad_password"
     ack_bad_newuser = "ack_bad_newuser"
     ack_exit = "ack_exit"
@@ -50,6 +51,8 @@ def Main():
     localSocket.bind((host, port))
     localSocket.listen(5)
     conn, addr = localSocket.accept()
+
+    # no use in running the loop if we couldn't connect
     if conn:
         running = True
 
@@ -60,7 +63,6 @@ def Main():
         if not command:
             conn.close()
             sys.exit()
-
         # just looking to make sure the command contains login
         validCommand = check_commands(opts[0], commandList)
         if validCommand:
@@ -75,7 +77,6 @@ def Main():
                     we don't want to close the connection and exit cause this
                     should loop until the command is valid
                     '''
-
             if opts[0] == "login":
                 if len(opts) != 3:
                     conn.send(invalid_command.encode())
@@ -127,7 +128,6 @@ def Main():
             elif opts[0] == "newuser":
                 uname = opts[1]
                 pword = opts[2]
-
                 # usernames and passwords must follow criteria
                 if (0 < len(uname) < 32):
                     if not check_commands(uname, userInfoList):
@@ -135,15 +135,18 @@ def Main():
                         file = open("accounts.txt", "a+")
                         file.write("\n" + str(uname) + "\n"+ str(pword))
                         file.close()
-                        conn.send(ack.encode())
 
+                        # send ack that we created a new user
+                        optList = []
+                        optList.append(ack_new_user)
+                        optList.append(uname)
+                        optString = " ".join(optList)
+                        conn.send(optString.encode())
                     else:
                         conn.send(ack_bad_newuser.encode())
                 else:
                     conn.send(ack_bad_newuser.encode())
-
                 # END NEWUSER LOGIC
-
         else: # command was not even an existing/recognized command
             conn.send(invalid_command.encode())
 

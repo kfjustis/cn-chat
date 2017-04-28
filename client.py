@@ -5,7 +5,6 @@ def wait_for_server(error_msg, connection):
     waiting = True
     while waiting:
         response = connection.recv(1024).decode()
-        #print(response)
         opts = response.split()
         if opts[0] == "ack":
             waiting = False
@@ -36,6 +35,11 @@ def wait_for_server(error_msg, connection):
             print("Server: " + str(uname) + " left.\n")
             connection.close()
             sys.exit()
+        elif opts[0] == "ack_new_user":
+            opts.remove("ack_new_user")
+            uname = opts[0]
+            print("Server: Created user " + "'" + str(uname) + "'")
+            waiting = False
         elif opts[0] == "ack_bad_password":
             print("Server: Incorrect password!")
             waiting = False
@@ -60,7 +64,8 @@ def Main():
         print("Make sure you've started the server before you connect the client!\n")
         sys.exit()
     print()
-    print("Connected to " + str(host) + '/' + str(port) + '!')
+    #print("Connected to " + str(host) + '/' + str(port) + '!')
+    print("My chat room client. Version One.")
 
     # ask for command
     message = input("Enter command: ")
