@@ -62,7 +62,7 @@ def Main():
         validCommand = check_commands(opts[0], commandList)
         print("login state: " + str(login))
         if validCommand:
-            if opts[0] != "login" and login == False:
+            if opts[0] != "login" and opts[0] != "exit" and login == False:
                 print("Command denied. Please login first.")
                 conn.send(invalid_command.encode())
                 command = conn.recv(1024).decode()
@@ -101,7 +101,8 @@ def Main():
                     sys.exit()
                 # END LOGIN LOGIC
             if opts[0] == "exit":
-                print_error_and_send("Server closed by client!", conn)
+                print("Made it to exit if!")
+                #print_error_and_send("Server closed by client!", conn)
                 optList = []
                 optList.append(ack_exit)
                 if (currentUser is not None):
