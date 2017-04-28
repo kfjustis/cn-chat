@@ -36,7 +36,7 @@ def Main():
     invalid_command = "invalid_command"
     running = True
     login = False
-    commandList = ["send", "login", "newuser", "exit"]
+    commandList = ["send", "login", "newuser", "logout"]
     currentUser = None
 
     # read users from file
@@ -66,7 +66,7 @@ def Main():
         # just looking to make sure the command contains login
         validCommand = check_commands(opts[0], commandList)
         if validCommand:
-            if opts[0] != "login" and opts[0] != "exit" and login == False:
+            if opts[0] != "login" and opts[0] != "logout" and login == False:
                 conn.send(invalid_command.encode())
                 command = conn.recv(1024).decode()
                 opts = command.split()
@@ -98,7 +98,7 @@ def Main():
                     conn.close()
                     sys.exit()
                 # END LOGIN LOGIC
-            elif opts[0] == "exit":
+            elif opts[0] == "logout":
                 optList = []
                 optList.append(ack_exit)
                 if (currentUser is not None):
@@ -147,6 +147,8 @@ def Main():
                 else:
                     conn.send(ack_bad_newuser.encode())
                 # END NEWUSER LOGIC
+            else: # command was valid but deprecated
+                conn.send(invalid_command.encode())
         else: # command was not even an existing/recognized command
             conn.send(invalid_command.encode())
 

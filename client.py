@@ -19,9 +19,9 @@ def wait_for_server(error_msg, connection):
                     foundGuest = True
             # convert list to string and print
             message = " ".join(opts)
-            if not foundGuest:
+            if not foundGuest: # a user was logged in
                 print(message)
-            else:
+            else: # a user was not logged in so explain the situation to them
                 print("Server: (0) Exited or command invalid! If you haven't logged in, please do so.")
             waiting = False
         elif opts[0] == "ack_login":
@@ -64,11 +64,10 @@ def Main():
         print("Make sure you've started the server before you connect the client!\n")
         sys.exit()
     print()
-    #print("Connected to " + str(host) + '/' + str(port) + '!')
     print("My chat room client. Version One.")
 
     # ask for command
-    message = input("Enter command: ")
+    message = input("\nEnter command: ")
 
     # handle sending command
     localSocket.send(message.encode())
