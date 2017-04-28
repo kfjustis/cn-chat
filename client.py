@@ -5,9 +5,9 @@ def wait_for_server(error_msg, connection, print_message="Command success!"):
     waiting = True
     while waiting:
         response = connection.recv(1024).decode()
-        print(response)
+        #print(response)
         opts = response.split()
-        print("opts: " + str(opts))
+        #print("opts: " + str(opts))
         if opts[0] == "ack":
             waiting = False
         elif opts[0] == "ack_message":
@@ -25,6 +25,11 @@ def wait_for_server(error_msg, connection, print_message="Command success!"):
                 print(message)
             else:
                 print("Server: (0) Exited or command invalid! If you haven't logged in, please do so.")
+            waiting = False
+        elif opts[0] == "ack_login":
+            opts.remove("ack_login")
+            uname = opts[0]
+            print("Server: " + str(uname) + " joins.")
             waiting = False
         elif opts[0] == "ack_exit":
             #print("Made it to ack_exit!")
@@ -90,7 +95,7 @@ def Main():
     # need to handle commands in loop, we are logged in by here
     running = True
     while running:
-        message = input("Enter command: ")
+        message = input("\nEnter command: ")
         localSocket.send(message.encode())
 
         while wait_for_server("Server: (2) Exited or command invalid! If you haven't logged in, please do so.",

@@ -27,6 +27,7 @@ def Main():
     # vars
     ack = "ack"
     ack_message = "ack_message"
+    ack_login = "ack_login"
     ack_exit = "ack_exit"
     error = "error"
     invalid_command = "invalid_command"
@@ -63,10 +64,10 @@ def Main():
 
         # just looking to make sure the command contains login
         validCommand = check_commands(opts[0], commandList)
-        print("login state: " + str(login))
+        #print("login state: " + str(login))
         if validCommand:
             if opts[0] != "login" and opts[0] != "exit" and login == False:
-                print("Command denied. Please login first.")
+                #print("Command denied. Please login first.")
                 conn.send(invalid_command.encode())
                 command = conn.recv(1024).decode()
                 opts = command.split()
@@ -89,12 +90,16 @@ def Main():
                     validCreds = False
                 elif check_username_or_password(opts[1], userInfoList): # check username
                     if check_username_or_password(opts[2], userInfoList): # check password
-                        conn.send(ack.encode())
+                        #conn.send(ack.encode())
                         login = True
-                        validCommand = True
                         currentUser = opts[1]
-                        print("login state after login: " + str(login))
-                        print("logged in as: " + str(currentUser))
+                        optList = []
+                        optList.append(ack_login)
+                        optList.append(currentUser)
+                        optString = " ".join(optList)
+                        conn.send(optString.encode())
+                        #print("login state after login: " + str(login))
+                        #print("logged in as: " + str(currentUser))
                     else:
                         print_error_and_send("Invalid password! Terminating server...", conn)
                         conn.send(invalid_command.encode())
@@ -138,6 +143,10 @@ def Main():
             elif opts[0] == "newuser":
                 uname = opts[1]
                 pword = opts[2]
+
+                # usernames and passwords must follow criteria
+
+
                 # write account to file (has criteria)
                 file = open("accounts.txt", "a+")
                 file.write("\n" + str(uname) + "\n"+ str(pword))
@@ -149,82 +158,6 @@ def Main():
             conn.send(invalid_command.encode())
             conn.close()
             sys.exit()
-
-            '''
-            if command == "login":
-                opts = command.split()
-                if len(opts) != 3:
-                    print_error_and_send("(1) Invalid use of login command! Terminating server...", conn)
-                    conn.send(error.encode())
-                    conn.close()
-                    sys.exit()
-                elif opts[0] != "login":
-                    print_error_and_send("(2) Invalid use of login command! Terminating server...", conn)
-                    conn.send(error.encode())
-                    conn.close()
-                    sys.exit()
-                else:
-                    conn.send(ack.encode())
-                    login = True
-            elif opts[0] == "exit":
-                print_error_and_send("Server closed by client!", conn)
-                conn.send(ack.encode())
-                conn.close()
-                sys.exit()
-            elif opts[0] == "send":
-                # need to get string without the send command
-                # need to concat received message with the ack for client to see it
-                print("WE ARE SENDING THE SEND")
-                ack_message = ack_message + str(opts[1:])
-                conn.send(ack_message.encode())
-            elif opts[0] != "login" and opts[0] != "send":
-                print_error_and_send("(3) Invalid use of login command! Terminating server...", conn)
-                #conn.send(invalid_command.encode())
-
-                testing
-                a
-                conn.close()
-                sys.exit()
-            elif opts[0] == "login":
-                if len(opts) != 3:
-                    print_error_and_send("(4) Invalid use of login command! Terminating server...", conn)
-                    conn.send(error.encode())
-                    conn.close()
-                    sys.exit()
-                else:
-                    validCreds = False
-                    if check_username_or_password(opts[1], userInfoList) == True: # check username
-                        if check_username_or_password(opts[2], userInfoList) == True: # check password
-                            print("here2")
-                            conn.send(ack.encode())
-                            login = True
-                            validCommand = True
-                            currentUser = opts[1]
-                        else:
-                            print_error_and_send("Invalid password! Terminating server...", conn)
-                            #conn.send(error.encode())
-                            conn.send(invalid_command.encode())
-                            conn.close()
-                            sys.exit()
-                    else:
-                        print_error_and_send("Invalid username! Terminating server...", conn)
-                        conn.send(error.encode())
-                        conn.close()
-                        sys.exit()
-            else:
-                print("Command denied. Please login first.")
-                conn.send(invalid_command.encode())
-                command = conn.recv(1024).decode()
-                if not command:
-                    print_error_and_send("Invalid data! Terminating server...", conn)
-
-                    NOTICE!
-                    we don't want to close the connection and exit cause this
-                    should loop until the command is valid
-
-            '''
-
-        #running = True
 
     # close socket and exit
     localSocket.close()
