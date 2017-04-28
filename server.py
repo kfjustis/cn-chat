@@ -69,6 +69,7 @@ def Main():
                 print("Command denied. Please login first.")
                 conn.send(invalid_command.encode())
                 command = conn.recv(1024).decode()
+                opts = command.split()
                 if not command:
                     print_error_and_send("Invalid data! Terminating server...", conn)
                     '''
@@ -76,9 +77,10 @@ def Main():
                     we don't want to close the connection and exit cause this
                     should loop until the command is valid
                     '''
+
             if opts[0] == "login":
                 if len(opts) != 3:
-                    print_error_and_send("(1) Invalid use of login command! Terminating server...", conn)
+                    #print_error_and_send("(1) Invalid use of login command! Terminating server...", conn)
                     conn.send(invalid_command.encode())
                     #break
                     #conn.close()
@@ -125,6 +127,8 @@ def Main():
                 # must build opt list then send as a string
                 optList = []
                 optList.append(ack_message)
+                if currentUser is None:
+                    currentUser = "Guest"
                 optList.append(currentUser + ":")
                 for opt in opts:
                     optList.append(opt)

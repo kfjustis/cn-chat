@@ -12,13 +12,19 @@ def wait_for_server(error_msg, connection, print_message="Command success!"):
             waiting = False
         elif opts[0] == "ack_message":
             # have to cleanup the list to print for client
+            foundGuest = False
             opts.remove("ack_message")
             for item in opts:
                 if item == "send":
                     opts.remove("send")
+                if item == "Guest:":
+                    foundGuest = True
             # convert list to string and print
             message = " ".join(opts)
-            print(message)
+            if not foundGuest:
+                print(message)
+            else:
+                print("Server: (0) Exited or command invalid! If you haven't logged in, please do so.")
             waiting = False
         elif opts[0] == "ack_exit":
             #print("Made it to ack_exit!")
@@ -28,7 +34,9 @@ def wait_for_server(error_msg, connection, print_message="Command success!"):
             connection.close()
             sys.exit()
         elif opts[0] == "error":
-            print(error_msg)
+            waiting = False
+            print("We got here")
+            #print(error_msg)
             #connection.close()
             #sys.exit()
         elif opts[0] == "invalid_command":
