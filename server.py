@@ -32,11 +32,8 @@ def Main():
     ack_exit = "ack_exit"
     error = "error"
     invalid_command = "invalid_command"
-    invalid_username = "invalid_username"
-    invalid_password = "invalid_password"
     running = True
     login = False
-    commandFailing = False
     commandList = ["send", "login", "newuser", "exit"]
     currentUser = None
 
@@ -60,16 +57,13 @@ def Main():
         command = conn.recv(1024).decode()
         opts = command.split()
         if not command:
-            print_error_and_send("Invalid data! Terminating server...", conn)
             conn.close()
             sys.exit()
 
         # just looking to make sure the command contains login
         validCommand = check_commands(opts[0], commandList)
-        #print("login state: " + str(login))
         if validCommand:
             if opts[0] != "login" and opts[0] != "exit" and login == False:
-                #print("Command denied. Please login first.")
                 conn.send(invalid_command.encode())
                 command = conn.recv(1024).decode()
                 opts = command.split()
@@ -101,17 +95,13 @@ def Main():
                         #print("login state after login: " + str(login))
                         #print("logged in as: " + str(currentUser))
                     else:
-                        #print_error_and_send("Invalid password! Terminating server...", conn)
                         conn.send(ack_bad_password.encode())
-                        #conn.close()
-                        #sys.exit()
                 else:
                     conn.send(error.encode())
                     conn.close()
                     sys.exit()
                 # END LOGIN LOGIC
             elif opts[0] == "exit":
-                # print_error_and_send("Server closed by client!", conn)
                 optList = []
                 optList.append(ack_exit)
                 if (currentUser is not None):
@@ -122,7 +112,6 @@ def Main():
                 else:
                     optList.append("Guest")
                     optString = " ".join(optList)
-                    #print(optString)
                     conn.send(optString.encode())
                     conn.close()
                     sys.exit()
@@ -153,10 +142,7 @@ def Main():
                 conn.send(ack.encode())
                 #END NEWUSER LOGIC
         else: # command was not even an existing/recognized command
-            print_error_and_send("Command does not exist! Terminating server...", conn)
             conn.send(invalid_command.encode())
-            conn.close()
-            sys.exit()
 
     # close socket and exit
     localSocket.close()
