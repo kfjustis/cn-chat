@@ -29,6 +29,7 @@ def Main():
     ack_message = "ack_message"
     ack_login = "ack_login"
     ack_bad_password = "ack_bad_password"
+    ack_bad_newuser = "ack_bad_newuser"
     ack_exit = "ack_exit"
     error = "error"
     invalid_command = "invalid_command"
@@ -77,14 +78,11 @@ def Main():
 
             if opts[0] == "login":
                 if len(opts) != 3:
-                    #print_error_and_send("(1) Invalid use of login command! Terminating server...", conn)
                     conn.send(invalid_command.encode())
                 elif check_username_or_password(opts[1], userInfoList): # check username
-                    #if check_username_or_password(opts[2], userInfoList): # check password
                     unameIndex = userInfoList.index(opts[1])
                     pwordIndex = unameIndex + 1
                     if (userInfoList[pwordIndex] == opts[2]): # check actual password
-                        #conn.send(ack.encode())
                         login = True
                         currentUser = opts[1]
                         optList = []
@@ -92,8 +90,6 @@ def Main():
                         optList.append(currentUser)
                         optString = " ".join(optList)
                         conn.send(optString.encode())
-                        #print("login state after login: " + str(login))
-                        #print("logged in as: " + str(currentUser))
                     else:
                         conn.send(ack_bad_password.encode())
                 else:
@@ -133,14 +129,21 @@ def Main():
                 pword = opts[2]
 
                 # usernames and passwords must follow criteria
+                if (0 < len(uname) < 32):
+                    if not check_commands(uname, userInfoList):
+                        # write account to file (has criteria)
+                        file = open("accounts.txt", "a+")
+                        file.write("\n" + str(uname) + "\n"+ str(pword))
+                        file.close()
+                        conn.send(ack.encode())
 
+                    else:
+                        conn.send(ack_bad_newuser.encode())
+                else:
+                    conn.send(ack_bad_newuser.encode())
 
-                # write account to file (has criteria)
-                file = open("accounts.txt", "a+")
-                file.write("\n" + str(uname) + "\n"+ str(pword))
-                file.close()
-                conn.send(ack.encode())
-                #END NEWUSER LOGIC
+                # END NEWUSER LOGIC
+
         else: # command was not even an existing/recognized command
             conn.send(invalid_command.encode())
 

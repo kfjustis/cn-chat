@@ -7,7 +7,6 @@ def wait_for_server(error_msg, connection):
         response = connection.recv(1024).decode()
         #print(response)
         opts = response.split()
-        #print("opts: " + str(opts))
         if opts[0] == "ack":
             waiting = False
         elif opts[0] == "ack_message":
@@ -32,18 +31,20 @@ def wait_for_server(error_msg, connection):
             print("Server: " + str(uname) + " joins.")
             waiting = False
         elif opts[0] == "ack_exit":
-            #print("Made it to ack_exit!")
             opts.remove("ack_exit")
             uname = opts[0]
             print("Server: " + str(uname) + " left.\n")
             connection.close()
             sys.exit()
         elif opts[0] == "ack_bad_password":
-            waiting = False
             print("Server: Incorrect password!")
-        else:
             waiting = False
+        elif opts[0] == "ack_bad_newuser":
+            print("Server: Could not create user! Too long or already exists.")
+            waiting = False
+        else: # Some other error I haven't thought of
             print(error_msg)
+            waiting = False
 
     return True
 
