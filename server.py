@@ -14,6 +14,9 @@ def check_commands(input_command, comm_list):
     return False
 
 def check_username_or_password(input_info, uInfoList):
+    if not input_info:
+        return False
+
     for info in uInfoList:
         if input_info == info:
             return True
@@ -76,13 +79,14 @@ def Main():
             if opts[0] == "login":
                 if len(opts) != 3:
                     print_error_and_send("(1) Invalid use of login command! Terminating server...", conn)
-                    conn.send(error.encode())
-                    conn.close()
-                    sys.exit()
-                # validate credentials that were passed
-                validCreds = False
-                if check_username_or_password(opts[1], userInfoList) == True: # check username
-                    if check_username_or_password(opts[2], userInfoList) == True: # check password
+                    conn.send(invalid_command.encode())
+                    #break
+                    #conn.close()
+                    #sys.exit()
+                    # validate credentials that were passed
+                    validCreds = False
+                elif check_username_or_password(opts[1], userInfoList): # check username
+                    if check_username_or_password(opts[2], userInfoList): # check password
                         conn.send(ack.encode())
                         login = True
                         validCommand = True
@@ -100,22 +104,24 @@ def Main():
                     conn.close()
                     sys.exit()
                 # END LOGIN LOGIC
-            if opts[0] == "exit":
-                print("Made it to exit if!")
-                #print_error_and_send("Server closed by client!", conn)
+            elif opts[0] == "exit":
+                # print_error_and_send("Server closed by client!", conn)
                 optList = []
                 optList.append(ack_exit)
                 if (currentUser is not None):
+                    running = False
                     optList.append(currentUser)
+                    optString = " ".join(optList)
+                    conn.send(optString.encode())
                 else:
                     optList.append("Guest")
-                optString = " ".join(optList)
-                print(optString)
-                conn.send(optString.encode())
-                conn.close()
-                sys.exit()
-                # END EXIT LOGIC
-            if opts[0] == "send":
+                    optString = " ".join(optList)
+                    #print(optString)
+                    conn.send(optString.encode())
+                    conn.close()
+                    sys.exit()
+                    # END EXIT LOGIC
+            elif opts[0] == "send":
                 # must build opt list then send as a string
                 optList = []
                 optList.append(ack_message)
@@ -125,7 +131,7 @@ def Main():
                 optString = " ".join(optList)
                 conn.send(optString.encode())
                 # END SEND LOGIC
-            if opts[0] == "newuser":
+            elif opts[0] == "newuser":
                 uname = opts[1]
                 pword = opts[2]
                 # write account to file (has criteria)
@@ -214,7 +220,7 @@ def Main():
 
             '''
 
-        running = True
+        #running = True
 
     # close socket and exit
     localSocket.close()
