@@ -1,6 +1,12 @@
 import socket
 import sys
 
+'''
+This function forces the client to stay in sync with the server. Essentially, an infinite loop is executed
+that just reads from the socket and decodes the messages as strings. These strings are then split into
+an arg list that can then be manipulated to extract data and execute client-side commands. Command codes
+are usually sent in the form of "ack_descriptive_name".
+'''
 def wait_for_server(error_msg, connection):
     waiting = True
     while waiting:
@@ -53,7 +59,7 @@ def wait_for_server(error_msg, connection):
     return True
 
 def Main():
-    # connect and ask for username
+    # connect to socket
     host = socket.gethostname()
     port = 12450
     localSocket = socket.socket()
@@ -66,7 +72,7 @@ def Main():
     print()
     print("My chat room client. Version One.")
 
-    # ask for command
+    # ask for initial command
     message = input("\nEnter command: ")
 
     # handle sending command
@@ -86,6 +92,10 @@ def Main():
         while wait_for_server("Server: (2) Exited or command invalid! If you haven't logged in, please do so.",
             localSocket) == "invalid command":
             pass
+
+    # clean up
+    localSocket.close()
+    sys.exit()
 
 
 if __name__ == '__main__':
