@@ -6,12 +6,26 @@ def wait_for_server(error_msg, connection, print_message="Command success!"):
     while waiting == True:
         response = connection.recv(1024).decode()
         opts = response.split()
+
         if opts[0] == "ack":
             waiting = False
         elif opts[0] == "ack_message":
-            message = " ".join(opts[1:])
-            print("Server: " + message)
+            # have to cleanup the list to print for client
+            opts.remove("ack_message")
+            for item in opts:
+                if item == "send":
+                    opts.remove("send")
+            # convert list to string and print
+            message = " ".join(opts)
+            print(message)
             waiting = False
+        elif opts[0] == "ack_exit":
+            print("Made it to ack_exit!")
+            opts.remove("ack_exit")
+            uname = opts[0]
+            print("Server: " + str(uname) + " left.\n")
+            connection.close()
+            sys.exit()
         elif opts[0] == "error":
             print(error_msg)
             connection.close()
@@ -24,7 +38,6 @@ def wait_for_server(error_msg, connection, print_message="Command success!"):
             return "invalid command"
         elif opts[0] == "inavlid_username":
             waiting = False
-            print(error_msg)
             message = input("\nUsername: ")
             connection.send(message.encode())
             return "invalid_username"
@@ -61,7 +74,7 @@ def Main():
     localSocket.send(message.encode())
 
     # wait for valid command
-    while wait_for_server("\nExited or command invalid! If you haven't logged in, please do so.",
+    while wait_for_server("\n(1)Exited or command invalid! If you haven't logged in, please do so.",
         localSocket) == "invalid command":
         pass
 
@@ -71,7 +84,7 @@ def Main():
         message = input("Enter command: ")
         localSocket.send(message.encode())
 
-        while wait_for_server("\nExited or command invalid! If you haven't logged in, please do so.",
+        while wait_for_server("\n(2)Exited or command invalid! If you haven't logged in, please do so.",
             localSocket) == "invalid command":
             pass
 

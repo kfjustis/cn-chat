@@ -24,6 +24,7 @@ def Main():
     # vars
     ack = "ack"
     ack_message = "ack_message"
+    ack_exit = "ack_exit"
     error = "error"
     invalid_command = "invalid_command"
     invalid_username = "invalid_username"
@@ -101,7 +102,15 @@ def Main():
                 # END LOGIN LOGIC
             if opts[0] == "exit":
                 print_error_and_send("Server closed by client!", conn)
-                conn.send(ack.encode())
+                optList = []
+                optList.append(ack_exit)
+                if (currentUser is not None):
+                    optList.append(currentUser)
+                else:
+                    optList.append("Guest")
+                optString = " ".join(optList)
+                print(optString)
+                conn.send(optString.encode())
                 conn.close()
                 sys.exit()
                 # END EXIT LOGIC
@@ -109,6 +118,7 @@ def Main():
                 # must build opt list then send as a string
                 optList = []
                 optList.append(ack_message)
+                optList.append(currentUser + ":")
                 for opt in opts:
                     optList.append(opt)
                 optString = " ".join(optList)
