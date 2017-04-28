@@ -66,7 +66,6 @@ def wait_for_server(error_msg, connection, print_message="Command success!"):
         else:
             waiting = False
             print("Error was: " + error_msg)
-            print("Waiting for server response...")
 
     return True
 
