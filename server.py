@@ -46,6 +46,7 @@ def Main():
     ack_new_user = "ack_new_user"
     ack_bad_password = "ack_bad_password"
     ack_bad_newuser = "ack_bad_newuser"
+    ack_bad_newuser_pword = "ack_bad_newuser_pword"
     ack_exit = "ack_exit"
     error = "error"
     invalid_command = "invalid_command"
@@ -75,6 +76,11 @@ def Main():
 
     # handle reading command (MUST WAIT FOR VALID COMMAND)
     while running:
+        # read users from file
+        file = open("accounts.txt", "r")
+        userInfoList = file.read().splitlines()
+        file.close()
+
         command = conn.recv(1024).decode()
         opts = command.split()
         if not command:
@@ -160,27 +166,34 @@ def Main():
                 print(str(currentUser) + ": " + str(optString))
                 # END SEND LOGIC
             elif opts[0] == "newuser":
-                uname = opts[1]
-                pword = opts[2]
-                # usernames and passwords must follow criteria
-                if (0 < len(uname) < 32):
-                    if not check_commands(uname, userInfoList):
-                        # write account to file (has criteria)
-                        file = open("accounts.txt", "a+")
-                        file.write("\n" + str(uname) + "\n"+ str(pword))
-                        file.close()
-                        # send ack that we created a new user
-                        optList = []
-                        optList.append(ack_new_user)
-                        optList.append(uname)
-                        optString = " ".join(optList)
-                        conn.send(optString.encode())
-                        print("New user created: " + str(optList[1]))
+                if len(opts) != 3:
+                    conn.send(ack_bad_newuser.encode())
+                else:
+                    uname = opts[1]
+                    pword = opts[2]
+                    # usernames and passwords must follow criteria
+                    if (0 < len(uname) < 32): # username must follow a certain length
+                        # username must not exist already
+                        if not check_commands(uname, userInfoList):
+                            if (4 <= len(pword) <= 8): # password must be certain length
+                                # write account to file (has criteria)
+                                file = open("accounts.txt", "a+")
+                                file.write("\n" + str(uname) + "\n"+ str(pword))
+                                file.close()
+                                # send ack that we created a new user
+                                optList = []
+                                optList.append(ack_new_user)
+                                optList.append(uname)
+                                optString = " ".join(optList)
+                                conn.send(optString.encode())
+                                print("New user created: " + str(optList[1]))
+                            else:
+                                conn.send(ack_bad_newuser_pword.encode())
+                        else:
+                            conn.send(ack_bad_newuser.encode())
                     else:
                         conn.send(ack_bad_newuser.encode())
-                else:
-                    conn.send(ack_bad_newuser.encode())
-                # END NEWUSER LOGIC
+                    # END NEWUSER LOGIC
             else: # command was valid but deprecated
                 conn.send(invalid_command.encode())
         else: # command was not even an existing/recognized command

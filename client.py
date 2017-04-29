@@ -50,7 +50,10 @@ def wait_for_server(error_msg, connection):
             print("Server: Incorrect password!")
             waiting = False
         elif opts[0] == "ack_bad_newuser":
-            print("Server: Could not create user! Too long or already exists.")
+            print("Server: Could not create user! Too long, already exists, or bad password given.")
+            waiting = False
+        elif opts[0] == "ack_bad_newuser_pword":
+            print("Server: Could not create user! Password not between 4 and 8 characters!")
             waiting = False
         else: # Some other error I haven't thought of
             print(error_msg)
